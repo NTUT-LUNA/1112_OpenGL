@@ -82,7 +82,6 @@ void RenderScene(void)
     glColor3f(1, 1, 0);
     glutSolidCube(6);
     glutSwapBuffers(); // swap front/back buffer
-
 }
 void SetupRC()
 {
