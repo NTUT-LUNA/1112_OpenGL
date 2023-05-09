@@ -1,4 +1,4 @@
-﻿#include <stdio.h> 
+#include <stdio.h> 
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -117,71 +117,7 @@ int main(int argc, char** argv)
     glutMainLoop();	//http://www.programmer-club.com.tw/ShowSameTitleN/opengl/2288.html
     return 0;
 }
-void ChangeSize(int w, int h)
-{
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-10, 10, -10, 10, -10, 20);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-}
-void RenderScene(void)
-{
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear content in buffer
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0, 0, 10.0f, 0, 0, 0, 0, 1, 0);
 
-    // perform transformation for the cube
-    //glRotatef(degX, 1, 0, 0);
-    //glRotatef(degY, 0, 1, 0);
-    //glRotatef(degZ, 0, 0, 1);
-    //glTranslatef(tx, ty, tz);
-
-    // perform transformation for the cube with matrix calculation
-    CalculateRotMatrix(rotXMatrix, degX, 1, 0, 0);
-    CalculateRotMatrix(rotYMatrix, degY, 0, 1, 0);
-    CalculateRotMatrix(rotZMatrix, degZ, 0, 0, 1);
-    CalculateTranslationMatrix(translateMatrix, tx, ty, tz);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    // debug
-    //PrintMatrix(rotXMatrix);
-    //PrintMatrix(rotYMatrix);
-    //PrintMatrix(rotZMatrix);
-    // debug
-    glMultMatrixf(rotXMatrix);
-    glMultMatrixf(rotYMatrix);
-    glMultMatrixf(rotZMatrix);
-    glMultMatrixf(translateMatrix);
-
-    // draw x-axis, y-axis and z-axis
-    glColor3f(1, 0, 0);
-    glBegin(GL_LINES);
-    glVertex3f(-10, 0, 0);
-    glVertex3f(10, 0, 0);
-    glEnd();
-
-    glColor3f(0, 1, 0);
-    glBegin(GL_LINES);
-    glVertex3f(0, -10, 0);
-    glVertex3f(0, 10, 0);
-    glEnd();
-
-    glColor3f(0, 0, 1);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, -10);
-    glVertex3f(0, 0, 10);
-    glEnd();
-
-    // cube
-    glColor3f(1, 1, 0);
-    glutSolidCube(6);
-    glutSwapBuffers(); // swap front/back buffer
-}
 void SetupRC()
 {
     // Light values and coordinates
