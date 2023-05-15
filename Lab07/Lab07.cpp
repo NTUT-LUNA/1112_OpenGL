@@ -114,10 +114,14 @@ void WritePixel(float x, float y, float d)
     if (d > 0)
     {
         glColor3f(0.f, 0.f, 1.f);
+        print("[Blue ] ");
+        xy(x, y);
     }
     else
     {
         glColor3f(0.f, 1.f, 0.f);
+        print("[Green] ");
+        xy(x, y);
     }
     glPointSize(15);
     glBegin(GL_POINTS);
