@@ -22,6 +22,8 @@ void SelectMenu(int);
 void SelectGridDimMenu(int);
 void BuildPopupMenu();
 void SetupRC();
+void Idle();
+void Timer(int);
 void MyReshape(int, int);
 void MyDisplay(void);
 void MyKeyboard(uchar, int, int);
@@ -45,6 +47,9 @@ std::vector<Vec2> poly;
 Vec2 *vList;
 // mode
 bool debug = false;
+// halfspace pixels
+std::vector<Vec2> pixels;
+int pIndex = 0;
 
 void PrintMatrix(const GLfloat* matrix)
 {
@@ -85,7 +90,7 @@ int main(int argc, char** argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(600, 600);
     glutInitWindowPosition(800, 400);
-    glutCreateWindow("2D Grid (counter-clockwise)");
+    glutCreateWindow("2D Grid animated");
 
     BuildPopupMenu();
     SetupRC();
@@ -95,6 +100,8 @@ int main(int argc, char** argv)
     glutKeyboardFunc(MyKeyboard);
     glutMouseFunc(MyMouse);
     glutSpecialFunc(MySpecialKeys);
+    glutIdleFunc(Idle);
+    glutTimerFunc(0, Timer, 0); // First timer call immediately
 
     glutMainLoop();	// http://www.programmer-club.com.tw/ShowSameTitleN/opengl/2288.html
 
@@ -154,7 +161,7 @@ void Crow(std::vector<Vec2> poly)
     AssignVList(poly);
     Crow(vList, poly.size());
 }
-void Midpoint(const Rect& rect)
+void Midpoint(Rect& rect)
 {
     print("v1v2: ");
     Midpoint(rect.v1, rect.v2);
@@ -166,7 +173,7 @@ void Midpoint(const Rect& rect)
     Midpoint(rect.v4, rect.v1);
     newline();
 }
-void Midpoint(const Triangle& triangle)
+void Midpoint(Triangle& triangle)
 {
     print("v1v2: ");
     Midpoint(triangle.v1, triangle.v2);
@@ -176,7 +183,7 @@ void Midpoint(const Triangle& triangle)
     Midpoint(triangle.v3, triangle.v1);
     newline();
 }
-void Midpoint(const std::vector<Vec2>& poly)
+void Midpoint(std::vector<Vec2>& poly)
 {
     if (poly.size() <= 0) { return; } // infinite loop guard
     int i;
@@ -240,6 +247,15 @@ void SetupRC()
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_DEPTH_TEST);
 }
+void Idle()
+{
+    glutPostRedisplay();
+}
+void Timer(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(30, Timer, 0);
+}
 void MyReshape(int w, int h)
 {
     glutReshapeWindow(w, w);
@@ -288,14 +304,14 @@ void MyDisplay(void)
         //glVertex2f(rect.v3.x, rect.v3.y);
         //glVertex2f(rect.v4.x, rect.v4.y); // current point
 
-        //glVertex2f(triangle.v1.x, triangle.v1.y);
-        //glVertex2f(triangle.v2.x, triangle.v2.y);
-        //glVertex2f(triangle.v3.x, triangle.v3.y); // current point
+        glVertex2f(triangle.v1.x, triangle.v1.y);
+        glVertex2f(triangle.v2.x, triangle.v2.y);
+        glVertex2f(triangle.v3.x, triangle.v3.y); // current point
         
-        for (int i = 0; i < poly.size(); i++)
+        /*for (int i = 0; i < poly.size(); i++)
         {
             glVertex2f(poly.at(i).x, poly.at(i).y);
-        }
+        }*/
     }
     glEnd();
 
@@ -303,16 +319,26 @@ void MyDisplay(void)
     {
         // midpoint algorithm
         //Midpoint(rect);
-        //Midpoint(triangle);
-        Midpoint(poly);
+        Midpoint(triangle);
+        //Midpoint(poly);
 
         // Halfspace algorithm
         //HalfSpace(triangle);
 
+        // Halfspace with animation
+        if (pixels.size() > 0)
+        {
+            for (int i = 0; i < pixels.size(); i++)
+            {
+                if (i > pIndex) { break; }
+                SetPixel(pixels.at(i).x, pixels.at(i).y);
+            }
+        }
+
         // Crow's algorithm
         //Crow(rect);
         //Crow(triangle);
-        Crow(poly);
+        //Crow(poly);
     }
     
     // origin
@@ -323,6 +349,8 @@ void MyDisplay(void)
 
     // swap front/back buffer
     glutSwapBuffers();
+
+    pIndex += 5;
 }
 void MyKeyboard(uchar key, int x, int y)
 {
@@ -355,26 +383,36 @@ void MyMouse(int button, int state, int x, int y)
     rect.v3 = rect.v4;
     rect.v4 = vec;*/
 
-    /*if (clickCount == 3)
+    if (clickCount == 3)
     {
         clickCount = 0;
         triangle = Triangle();
+        pIndex = 0;
+        pixels.clear();
     }
     triangle.v1 = triangle.v2;
     triangle.v2 = triangle.v3;
-    triangle.v3 = vec;*/
+    triangle.v3 = vec;
     
-    if (clickCount == POLY_MAX)
+    /*if (clickCount == POLY_MAX)
     {
         clickCount = 0;
         poly.clear();
     }
-    poly.push_back(vec);
+    poly.push_back(vec);*/
 
     clickCount++;
 
     if (debug)
         printf("Mouse (%d, %d) --> origin (%.2f, %.2f) --> grid (%.2f, %.2f)\n", x, y, xx, yy, vec.x, vec.y);
+
+    // push back pixels for drawing
+    pixels.clear();
+    HalfSpace(triangle, pixels);
+    pIndex = 0;
+
+    print("pixels size: ");
+    println(pixels.size());
 
     glutPostRedisplay();
 }
